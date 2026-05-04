@@ -8,6 +8,7 @@ import Home from "./components/Home";
 import Toast from "./components/Toast";
 import SocialLinks from "./components/SocialLinks";
 import Analysis from "./components/Analysis";
+import Cursor from "./components/Cursor";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -147,7 +148,68 @@ function App() {
 
   // ROUTING
   if (page === "home") {
-    return <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />;
+    return (
+  <div className="page">
+    <Cursor />
+
+    {page === "home" && (
+      <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />
+    )}
+
+    {page === "auth" && (
+      <Auth setUser={setUser} setToast={setToast} setPage={setPage} />
+    )}
+
+    {page === "app" && (
+      <>
+        <SocialLinks />
+
+        {toast && (
+          <div className="fixed top-5 right-5 z-50">
+            <Toast {...toast} onClose={() => setToast(null)} />
+          </div>
+        )}
+
+        <div className="container">
+          <Sidebar
+            focusInput={() => inputRef.current?.focus()}
+            user={user}
+            logout={logout}
+            goToLogin={() => setPage("auth")}
+            setView={setView}
+            view={view}
+          />
+
+          <div className="card">
+            {view === "analysis" ? (
+              <Analysis tasks={tasks} />
+            ) : (
+              <>
+                <h1 className="text-3xl font-semibold mb-10 capitalize">
+                  {view}
+                </h1>
+
+                <TaskInput
+                  addTask={addTask}
+                  inputRef={inputRef}
+                  user={user}
+                  goToLogin={() => setPage("auth")}
+                />
+
+                <TaskList
+                  tasks={view === "projects" ? groupedTasks : filteredTasks}
+                  view={view}
+                  toggleTask={toggleTask}
+                  deleteTask={deleteTask}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+);
   }
 
   if (page === "auth") {
@@ -155,7 +217,9 @@ function App() {
   }
 
   return (
+    
     <div className="page">
+      <Cursor />
       <SocialLinks />
 
       {toast && (

@@ -53,3 +53,31 @@ body {
            bg-black text-white hover:bg-gray-800 transition shadow-md;
   }
 }
+
+/* 🔥 Custom Cursor */
+.custom-cursor {
+  width: 18px;
+  height: 18px;
+  background-color: #C9C1A6;
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  box-shadow: 0 0 12px rgba(201, 193, 166, 0.8);
+  transition: transform 0.08s ease;
+}
+
+/* Hover grow */
+.custom-cursor.active {
+  transform: translate(-50%, -50%) scale(1.6);
+}
+body {
+  cursor: none;
+}
+
+*,
+*::before,
+*::after {
+  cursor: none !important;
+}
