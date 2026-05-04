@@ -2,7 +2,7 @@ import { Home, Calendar, Folder, Plus } from "lucide-react";
 
 const Sidebar = ({ focusInput, user, logout, goToLogin }) => {
   return (
-    <div className="w-64 pt-6 flex flex-col justify-between bg-[#eee9e1] rounded-2xl px-6 py-6">
+    <div className="w-64 pt-6 flex flex-col justify-between bg-[#DDD6C0] rounded-2xl px-6 py-6">
 
       <div>
         <h2 className="text-xl font-medium mb-6">Tickd</h2>

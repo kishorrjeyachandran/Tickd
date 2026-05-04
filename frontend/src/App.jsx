@@ -7,98 +7,126 @@ import Auth from "./components/Auth";
 import Home from "./components/Home";
 import Toast from "./components/Toast";
 import SocialLinks from "./components/SocialLinks";
+
 function App() {
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [filter, setFilter] = useState("all");
   const [toast, setToast] = useState(null);
   const [page, setPage] = useState("home");
   const inputRef = useRef(null);
 
-  // session check
+  // ✅ SINGLE SOURCE OF AUTH TRUTH
   useEffect(() => {
-    const checkUser = async () => {
+    const getSession = async () => {
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-
-      if (user && !user.email_confirmed_at) {
-        await supabase.auth.signOut();
-        return;
-      }
-
-      setUser(user || null);
+      setUser(data.session?.user || null);
     };
 
-    checkUser();
+    getSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_, session) => {
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+
+        // 🔥 AUTO REDIRECT
+        if (currentUser) setPage("app");
+        else setPage("home");
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  // fetch tasks ONLY if logged in
+  // ✅ FETCH TASKS
   useEffect(() => {
     if (!user) return;
 
     const fetchTasks = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("tasks")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (data) setTasks(data);
+      if (error) {
+        setToast({ type: "error", message: error.message });
+        return;
+      }
+
+      setTasks(data || []);
     };
 
     fetchTasks();
   }, [user]);
 
+  // ✅ ADD TASK
   const addTask = async (text) => {
-    if (!user) return;
+    if (!user || !text.trim()) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("tasks")
       .insert([{ text, completed: false, user_id: user.id }])
       .select();
 
-    if (data) setTasks([data[0], ...tasks]);
+    if (error) {
+      setToast({ type: "error", message: error.message });
+      return;
+    }
+
+    setTasks((prev) => [data[0], ...prev]);
   };
 
+  // ✅ DELETE TASK
   const deleteTask = async (id) => {
-    if (!user) return;
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
 
-    await supabase.from("tasks").delete().eq("id", id);
-    setTasks(tasks.filter((t) => t.id !== id));
+    if (error) {
+      setToast({ type: "error", message: error.message });
+      return;
+    }
+
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // ✅ TOGGLE TASK
   const toggleTask = async (task) => {
-    if (!user) return;
-
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("tasks")
       .update({ completed: !task.completed })
       .eq("id", task.id)
       .select();
 
-    if (data) {
-      setTasks(tasks.map((t) => (t.id === task.id ? data[0] : t)));
+    if (error) {
+      setToast({ type: "error", message: error.message });
+      return;
     }
+
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? data[0] : t))
+    );
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
     setToast({ type: "info", message: "Logged out" });
   };
 
-  // routing
+  // ROUTING
   if (page === "home") {
-    return <Home goToApp={() => setPage("app")} />;
+    return <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />;
   }
 
   if (page === "auth") {
-    return <Auth setUser={setUser} setToast={setToast} />;
+    return <Auth setUser={setUser} setToast={setToast} setPage={setPage} />;
   }
 
   return (
     <div className="page">
-      
+      <SocialLinks />
+
       {toast && (
         <div className="fixed top-5 right-5 z-50">
           <Toast {...toast} onClose={() => setToast(null)} />
