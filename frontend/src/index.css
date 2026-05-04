@@ -2,11 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global styles */
 body {
   background-color: #f5f1ea;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  scroll-behavior: smooth;
 }
 
+/* Smooth UI feel */
+* {
+  transition: all 0.2s ease;
+}
+
+/* Selection highlight */
+::selection {
+  background: #000;
+  color: #fff;
+}
+
+/* Reusable UI system */
 @layer components {
   .page {
     @apply min-h-screen flex justify-center px-6 py-10 bg-[#f5f1ea] text-gray-800;
@@ -21,14 +35,21 @@ body {
   }
 
   .nav-item {
-    @apply flex items-center gap-3 cursor-pointer text-gray-600 hover:text-black transition;
+    @apply flex items-center gap-3 cursor-pointer text-gray-600 hover:text-black;
   }
 
   .input {
-    @apply w-full bg-transparent border-b border-black/20 py-3 text-sm outline-none focus:border-black transition;
+    @apply w-full border-b border-black/20 py-3 outline-none bg-transparent text-sm focus:border-black;
   }
 
   .filter-btn {
-    @apply text-sm text-gray-500 hover:text-black transition;
+    @apply text-sm text-gray-500 hover:text-black;
+  }
+}
+
+@layer components {
+  .icon-btn {
+    @apply w-10 h-10 flex items-center justify-center rounded-full 
+           bg-black text-white hover:bg-gray-800 transition shadow-md;
   }
 }
