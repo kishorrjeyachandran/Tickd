@@ -7,13 +7,14 @@ import Auth from "./components/Auth";
 import Home from "./components/Home";
 import Toast from "./components/Toast";
 import SocialLinks from "./components/SocialLinks";
+import Analysis from "./components/Analysis";
 
 function App() {
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [toast, setToast] = useState(null);
   const [page, setPage] = useState("home");
-  const [view, setView] = useState("today"); // 🔥 NEW
+  const [view, setView] = useState("today");
   const inputRef = useRef(null);
 
   // AUTH
@@ -74,7 +75,7 @@ function App() {
           completed: false,
           user_id: user.id,
           due_date: dueDate,
-          project: project,
+          project: project?.trim() || null,
         },
       ])
       .select();
@@ -123,7 +124,7 @@ function App() {
     setToast({ type: "info", message: "Logged out" });
   };
 
-  // 🔥 FILTER LOGIC
+  // FILTER LOGIC
   const todayDate = new Date().toISOString().split("T")[0];
 
   const filteredTasks = tasks.filter((task) => {
@@ -133,17 +134,16 @@ function App() {
     if (view === "projects") return task.project;
     return true;
   });
+
   const groupedTasks = tasks.reduce((acc, task) => {
-  // 🔥 normalize project name
-  const projectName = task.project?.trim();
+    const projectName = task.project?.trim();
+    const key = projectName ? projectName : "No Project";
 
-  const key = projectName ? projectName : "No Project";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(task);
 
-  if (!acc[key]) acc[key] = [];
-  acc[key].push(task);
-
-  return acc;
-}, {});
+    return acc;
+  }, {});
 
   // ROUTING
   if (page === "home") {
@@ -170,27 +170,34 @@ function App() {
           user={user}
           logout={logout}
           goToLogin={() => setPage("auth")}
-          setView={setView} // 🔥 IMPORTANT
+          setView={setView}
+          view={view}
         />
 
         <div className="card">
-          <h1 className="text-3xl font-semibold mb-10 capitalize">
-            {view}
-          </h1>
+          {view === "analysis" ? (
+            <Analysis tasks={tasks} />
+          ) : (
+            <>
+              <h1 className="text-3xl font-semibold mb-10 capitalize">
+                {view}
+              </h1>
 
-          <TaskInput
-            addTask={addTask}
-            inputRef={inputRef}
-            user={user}
-            goToLogin={() => setPage("auth")}
-          />
+              <TaskInput
+                addTask={addTask}
+                inputRef={inputRef}
+                user={user}
+                goToLogin={() => setPage("auth")}
+              />
 
-          <TaskList
-  tasks={view === "projects" ? groupedTasks : filteredTasks}
-  view={view}
-  toggleTask={toggleTask}
-  deleteTask={deleteTask}
-/>
+              <TaskList
+                tasks={view === "projects" ? groupedTasks : filteredTasks}
+                view={view}
+                toggleTask={toggleTask}
+                deleteTask={deleteTask}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,12 @@
-import { Home, Calendar, Folder, Plus } from "lucide-react";
+import { Home, Calendar, Folder, Plus, BarChart2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const Sidebar = ({ focusInput, user, logout, goToLogin, setView }) => {
+const Sidebar = ({ focusInput, user, logout, goToLogin, setView, view }) => {
+  const getClass = (name) =>
+    `nav-item cursor-pointer ${
+      view === name ? "text-black font-medium" : "text-gray-600"
+    }`;
+
   return (
     <div className="w-64 pt-6 flex flex-col justify-between bg-[#DDD6C0] rounded-2xl px-6 py-6">
 
@@ -26,16 +31,20 @@ const Sidebar = ({ focusInput, user, logout, goToLogin, setView }) => {
 
         <div className="space-y-5 text-sm">
 
-          <div onClick={() => setView("today")} className="nav-item cursor-pointer">
+          <div onClick={() => setView("today")} className={getClass("today")}>
             <Home size={18}/> Today
           </div>
 
-          <div onClick={() => setView("upcoming")} className="nav-item cursor-pointer">
+          <div onClick={() => setView("upcoming")} className={getClass("upcoming")}>
             <Calendar size={18}/> Upcoming
           </div>
 
-          <div onClick={() => setView("projects")} className="nav-item cursor-pointer">
+          <div onClick={() => setView("projects")} className={getClass("projects")}>
             <Folder size={18}/> Projects
+          </div>
+
+          <div onClick={() => setView("analysis")} className={getClass("analysis")}>
+            <BarChart2 size={18}/> Analysis
           </div>
 
         </div>
@@ -61,6 +70,7 @@ const Sidebar = ({ focusInput, user, logout, goToLogin, setView }) => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
