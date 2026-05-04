@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
@@ -6,7 +6,16 @@ import TaskList from "./components/TaskList";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("all");
-
+  const inputRef = useRef(null);
+  useEffect(() => {
+  const savedTasks = localStorage.getItem("tasks");
+  if (savedTasks) {
+    setTasks(JSON.parse(savedTasks));
+  }
+}, []);
+useEffect(() => {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}, [tasks]);
   const addTask = (text) => {
     const newTask = {
       id: Date.now(),
@@ -39,14 +48,15 @@ function App() {
   return (
     <div className="page">
       <div className="container">
-        <Sidebar />
+        
+        <Sidebar focusInput={() => inputRef.current?.focus()} />
 
         <div className="card">
           <h1 className="text-3xl font-semibold mb-10 tracking-tight">
             Today
           </h1>
 
-          <TaskInput addTask={addTask} />
+          <TaskInput addTask={addTask} inputRef={inputRef} />
 
           <div className="flex gap-6 mb-8">
             <button onClick={() => setFilter("all")} className="filter-btn">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const TaskInput = ({ addTask }) => {
+const TaskInput = ({ addTask, inputRef }) => {
   const [text, setText] = useState("");
 
   const handleKeyDown = (e) => {
@@ -13,6 +13,7 @@ const TaskInput = ({ addTask }) => {
   return (
     <div className="mb-10">
       <input
+        ref={inputRef}
         type="text"
         placeholder="What needs to be done?"
         value={text}
