@@ -11,10 +11,26 @@ const Home = ({ goToApp, goToLogin }) => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-6xl mx-auto flex justify-between items-center mb-20"
       >
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="logo" className="w-8 h-8 object-contain" />
-          
-        </div>
+        <motion.img
+  src="/logo.png"
+  alt="logo"
+  className="w-8 h-8 object-contain cursor-pointer"
+  whileHover={{
+    scale: 1.2,
+    rotate: 8,
+  }}
+  transition={{ type: "spring", stiffness: 300 }}
+  style={{
+    filter: "drop-shadow(0 0 0px rgba(0,0,0,0))",
+  }}
+  onHoverStart={(e) => {
+    e.target.style.filter = "drop-shadow(0 0 10px rgba(0,0,0,0.4))";
+  }}
+  onHoverEnd={(e) => {
+    e.target.style.filter = "drop-shadow(0 0 0px rgba(0,0,0,0))";
+  }}
+/>
+
 
         <button
           onClick={goToLogin}

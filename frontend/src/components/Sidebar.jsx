@@ -1,10 +1,20 @@
 import { Home, Calendar, Folder, Plus } from "lucide-react";
+import { motion } from "framer-motion";
 
-const Sidebar = ({ focusInput, user, logout, goToLogin }) => {
+const Sidebar = ({ focusInput, user, logout, goToLogin, setView }) => {
   return (
     <div className="w-64 pt-6 flex flex-col justify-between bg-[#DDD6C0] rounded-2xl px-6 py-6">
 
       <div>
+
+        <motion.img
+          src="/logo.png"
+          alt="logo"
+          className="w-8 h-8 object-contain cursor-pointer mb-2"
+          whileHover={{ scale: 1.15, rotate: -6 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        />
+
         <h2 className="text-xl font-medium mb-6">Tickd</h2>
 
         <button
@@ -15,13 +25,22 @@ const Sidebar = ({ focusInput, user, logout, goToLogin }) => {
         </button>
 
         <div className="space-y-5 text-sm">
-          <div className="nav-item"><Home size={18}/> Today</div>
-          <div className="nav-item"><Calendar size={18}/> Upcoming</div>
-          <div className="nav-item"><Folder size={18}/> Projects</div>
+
+          <div onClick={() => setView("today")} className="nav-item cursor-pointer">
+            <Home size={18}/> Today
+          </div>
+
+          <div onClick={() => setView("upcoming")} className="nav-item cursor-pointer">
+            <Calendar size={18}/> Upcoming
+          </div>
+
+          <div onClick={() => setView("projects")} className="nav-item cursor-pointer">
+            <Folder size={18}/> Projects
+          </div>
+
         </div>
       </div>
 
-      {/* 🔥 Dynamic bottom */}
       {!user ? (
         <button
           onClick={goToLogin}
@@ -42,7 +61,6 @@ const Sidebar = ({ focusInput, user, logout, goToLogin }) => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

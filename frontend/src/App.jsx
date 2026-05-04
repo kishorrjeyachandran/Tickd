@@ -13,9 +13,10 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [toast, setToast] = useState(null);
   const [page, setPage] = useState("home");
+  const [view, setView] = useState("today"); // 🔥 NEW
   const inputRef = useRef(null);
 
-  // ✅ SINGLE SOURCE OF AUTH TRUTH
+  // AUTH
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -29,7 +30,6 @@ function App() {
         const currentUser = session?.user || null;
         setUser(currentUser);
 
-        // 🔥 AUTO REDIRECT
         if (currentUser) setPage("app");
         else setPage("home");
       }
@@ -40,7 +40,7 @@ function App() {
     };
   }, []);
 
-  // ✅ FETCH TASKS
+  // FETCH TASKS
   useEffect(() => {
     if (!user) return;
 
@@ -62,13 +62,21 @@ function App() {
     fetchTasks();
   }, [user]);
 
-  // ✅ ADD TASK
-  const addTask = async (text) => {
+  // ADD TASK
+  const addTask = async (text, dueDate = null, project = null) => {
     if (!user || !text.trim()) return;
 
     const { data, error } = await supabase
       .from("tasks")
-      .insert([{ text, completed: false, user_id: user.id }])
+      .insert([
+        {
+          text,
+          completed: false,
+          user_id: user.id,
+          due_date: dueDate,
+          project: project,
+        },
+      ])
       .select();
 
     if (error) {
@@ -79,7 +87,7 @@ function App() {
     setTasks((prev) => [data[0], ...prev]);
   };
 
-  // ✅ DELETE TASK
+  // DELETE
   const deleteTask = async (id) => {
     const { error } = await supabase.from("tasks").delete().eq("id", id);
 
@@ -91,7 +99,7 @@ function App() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // ✅ TOGGLE TASK
+  // TOGGLE
   const toggleTask = async (task) => {
     const { data, error } = await supabase
       .from("tasks")
@@ -109,10 +117,33 @@ function App() {
     );
   };
 
+  // LOGOUT
   const logout = async () => {
     await supabase.auth.signOut();
     setToast({ type: "info", message: "Logged out" });
   };
+
+  // 🔥 FILTER LOGIC
+  const todayDate = new Date().toISOString().split("T")[0];
+
+  const filteredTasks = tasks.filter((task) => {
+    if (view === "today") return task.due_date === todayDate;
+    if (view === "upcoming")
+      return task.due_date && task.due_date > todayDate;
+    if (view === "projects") return task.project;
+    return true;
+  });
+  const groupedTasks = tasks.reduce((acc, task) => {
+  // 🔥 normalize project name
+  const projectName = task.project?.trim();
+
+  const key = projectName ? projectName : "No Project";
+
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(task);
+
+  return acc;
+}, {});
 
   // ROUTING
   if (page === "home") {
@@ -139,10 +170,13 @@ function App() {
           user={user}
           logout={logout}
           goToLogin={() => setPage("auth")}
+          setView={setView} // 🔥 IMPORTANT
         />
 
         <div className="card">
-          <h1 className="text-3xl font-semibold mb-10">Today</h1>
+          <h1 className="text-3xl font-semibold mb-10 capitalize">
+            {view}
+          </h1>
 
           <TaskInput
             addTask={addTask}
@@ -152,10 +186,11 @@ function App() {
           />
 
           <TaskList
-            tasks={tasks}
-            toggleTask={toggleTask}
-            deleteTask={deleteTask}
-          />
+  tasks={view === "projects" ? groupedTasks : filteredTasks}
+  view={view}
+  toggleTask={toggleTask}
+  deleteTask={deleteTask}
+/>
         </div>
       </div>
     </div>

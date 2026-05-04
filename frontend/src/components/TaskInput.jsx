@@ -1,32 +1,51 @@
 import { useState } from "react";
 
-const TaskInput = ({ addTask, inputRef, user, goToLogin }) => {
+const TaskInput = ({ addTask, inputRef }) => {
   const [text, setText] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [project, setProject] = useState("");
 
   const handleKeyDown = (e) => {
-    if (!user) {
-      goToLogin();
-      return;
-    }
-
     if (e.key === "Enter" && text.trim()) {
-      addTask(text);
+      addTask(text, dueDate || null, project || null);
       setText("");
+      setDueDate("");
+      setProject("");
     }
   };
 
   return (
-    <div className="mb-10">
+    <div className="mb-10 space-y-3">
+
       <input
         ref={inputRef}
+        type="text"
+        placeholder="What needs to be done?"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={user ? "What needs to be done?" : "Login to add tasks"}
         className="input"
       />
+
+      <div className="flex gap-3 text-sm">
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="border px-2 py-1 rounded"
+        />
+
+        <input
+          type="text"
+          placeholder="Project (optional)"
+          value={project}
+          onChange={(e) => setProject(e.target.value)}
+          className="border px-2 py-1 rounded"
+        />
+      </div>
+
     </div>
   );
 };
 
-export default TaskInput; // 🔥 THIS LINE IS REQUIRED
+export default TaskInput;
