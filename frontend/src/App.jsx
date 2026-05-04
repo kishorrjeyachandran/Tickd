@@ -147,9 +147,10 @@ function App() {
   }, {});
 
   // ROUTING
-  if (page === "home") {
-    return (
+  return (
   <div className="page">
+
+    {/* 🔥 GLOBAL CURSOR */}
     <Cursor />
 
     {page === "home" && (
@@ -208,13 +209,9 @@ function App() {
         </div>
       </>
     )}
+
   </div>
 );
-  }
-
-  if (page === "auth") {
-    return <Auth setUser={setUser} setToast={setToast} setPage={setPage} />;
-  }
 
   return (
     
