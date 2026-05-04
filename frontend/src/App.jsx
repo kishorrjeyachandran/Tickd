@@ -16,6 +16,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [page, setPage] = useState("home");
   const [view, setView] = useState("today");
+  const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
 
   // AUTH
@@ -47,48 +48,76 @@ function App() {
     if (!user) return;
 
     const fetchTasks = async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+  setLoading(true);
 
-      if (error) {
-        setToast({ type: "error", message: error.message });
-        return;
-      }
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
-      setTasks(data || []);
-    };
+  if (error) {
+    setToast({ type: "error", message: error.message });
+    setLoading(false);
+    return;
+  }
+
+  setTasks(data || []);
+  setLoading(false);
+};
 
     fetchTasks();
   }, [user]);
 
   // ADD TASK
-  const addTask = async (text, dueDate = null, project = null) => {
-    if (!user || !text.trim()) return;
+  const addTask = async (
+  text,
+  dueDate = null,
+  project = null,
+  priority = "medium"
+) => {
+  if (!user || !text.trim()) return;
 
-    const { data, error } = await supabase
-      .from("tasks")
-      .insert([
-        {
-          text,
-          completed: false,
-          user_id: user.id,
-          due_date: dueDate,
-          project: project?.trim() || null,
-        },
-      ])
-      .select();
+  const { data, error } = await supabase
+    .from("tasks")
+    .insert([
+      {
+        text,
+        completed: false,
+        user_id: user.id,
+        due_date: dueDate,
+        project: project?.trim() || null,
+        priority,
+      },
+    ])
+    .select();
 
-    if (error) {
-      setToast({ type: "error", message: error.message });
-      return;
-    }
+  if (error) {
+    setToast({ type: "error", message: error.message });
+    return;
+  }
 
-    setTasks((prev) => [data[0], ...prev]);
-  };
+  setTasks((prev) => [data[0], ...prev]);
+};
 
+  const updateTask = async (id, newText) => {
+  if (!newText.trim()) return;
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .update({ text: newText })
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    setToast({ type: "error", message: error.message });
+    return;
+  }
+
+  setTasks((prev) =>
+    prev.map((t) => (t.id === id ? data[0] : t))
+  );
+};
   // DELETE
   const deleteTask = async (id) => {
     const { error } = await supabase.from("tasks").delete().eq("id", id);
@@ -251,12 +280,17 @@ function App() {
                 goToLogin={() => setPage("auth")}
               />
 
-              <TaskList
-                tasks={view === "projects" ? groupedTasks : filteredTasks}
-                view={view}
-                toggleTask={toggleTask}
-                deleteTask={deleteTask}
-              />
+              {loading ? (
+  <p className="text-gray-400 text-sm">Loading tasks...</p>
+) : (
+  <TaskList
+  tasks={view === "projects" ? groupedTasks : filteredTasks}
+  view={view}
+  toggleTask={toggleTask}
+  deleteTask={deleteTask}
+  updateTask={updateTask}   // 🔥 ADD THIS
+/>
+)}
             </>
           )}
         </div>

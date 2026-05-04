@@ -4,12 +4,13 @@ const TaskInput = ({ addTask, inputRef }) => {
   const [text, setText] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [project, setProject] = useState("");
-
+  const [priority, setPriority] = useState("medium");
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && text.trim()) {
-      addTask(text, dueDate || null, project || null);
+      addTask(text, dueDate || null, project || null, priority);
       setText("");
       setDueDate("");
+      setPriority("medium");
       setProject("");
     }
   };
@@ -42,8 +43,17 @@ const TaskInput = ({ addTask, inputRef }) => {
           onChange={(e) => setProject(e.target.value)}
           className="border px-2 py-1 rounded"
         />
+        <select
+  value={priority}
+  onChange={(e) => setPriority(e.target.value)}
+  className="border px-2 py-1 rounded text-sm"
+>
+  <option value="low">Low</option>
+  <option value="medium">Medium</option>
+  <option value="high">High</option>
+</select>
       </div>
-
+      
     </div>
   );
 };
