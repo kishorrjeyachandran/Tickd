@@ -197,10 +197,25 @@ function App() {
           <SocialLinks />
 
           {/* 📱 MOBILE NAVBAR */}
-          <div className="md:hidden flex justify-between items-center px-4 py-3 bg-[#DDD6C0] rounded-xl mb-4">
-            <button onClick={() => setIsSidebarOpen(true)}>☰</button>
-            <h1 className="font-medium">Tickd</h1>
-          </div>
+          <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#DDD6C0] rounded-xl mb-4 shadow-sm">
+
+  {/* LEFT: MENU */}
+  <button
+    onClick={() => setIsSidebarOpen(true)}
+    className="text-xl"
+  >
+    ☰
+  </button>
+
+  {/* CENTER: TITLE */}
+  <h1 className="text-base font-medium absolute left-1/2 -translate-x-1/2">
+    Tickd
+  </h1>
+
+  {/* RIGHT: EMPTY (balances layout) */}
+  <div className="w-6" />
+
+</div>
 
           {/* 🔥 OVERLAY */}
           {isSidebarOpen && (
