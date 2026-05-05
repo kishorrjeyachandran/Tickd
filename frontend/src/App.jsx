@@ -197,9 +197,9 @@ function App() {
           <SocialLinks />
 
           {/* 📱 MOBILE NAVBAR */}
-          <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#DDD6C0] rounded-xl mb-4 shadow-sm">
+          <div className="md:hidden fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 py-3 bg-[#DDD6C0]/90 backdrop-blur-md shadow-sm">
 
-  {/* LEFT: MENU */}
+  {/* MENU */}
   <button
     onClick={() => setIsSidebarOpen(true)}
     className="text-xl"
@@ -207,12 +207,12 @@ function App() {
     ☰
   </button>
 
-  {/* CENTER: TITLE */}
+  {/* CENTER TITLE */}
   <h1 className="text-base font-medium absolute left-1/2 -translate-x-1/2">
     Tickd
   </h1>
 
-  {/* RIGHT: EMPTY (balances layout) */}
+  {/* RIGHT SPACER */}
   <div className="w-6" />
 
 </div>
