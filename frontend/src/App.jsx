@@ -165,6 +165,8 @@ function App() {
     return true;
   });
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const groupedTasks = tasks.reduce((acc, task) => {
     const projectName = task.project?.trim();
     const key = projectName ? projectName : "No Project";
@@ -242,61 +244,82 @@ function App() {
   </div>
 );
 
-  return (
-    
-    <div className="page">
-      <Cursor />
-      <SocialLinks />
 
-      {toast && (
-        <div className="fixed top-5 right-5 z-50">
-          <Toast {...toast} onClose={() => setToast(null)} />
+return (
+  <div className="page">
+    <Cursor />
+
+    {page === "home" && (
+      <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />
+    )}
+
+    {page === "auth" && (
+      <Auth setUser={setUser} setToast={setToast} setPage={setPage} />
+    )}
+
+    {page === "app" && (
+      <>
+        <SocialLinks />
+
+        {/* 🔥 MOBILE NAVBAR */}
+        <div className="md:hidden flex justify-between items-center px-4 py-3 bg-[#DDD6C0] rounded-xl mb-4">
+          <button onClick={() => setIsSidebarOpen(true)}>☰</button>
+          <h1 className="font-medium">Tickd</h1>
         </div>
-      )}
 
-      <div className="container">
-        <Sidebar
-          focusInput={() => inputRef.current?.focus()}
-          user={user}
-          logout={logout}
-          goToLogin={() => setPage("auth")}
-          setView={setView}
-          view={view}
-        />
+        {toast && (
+          <div className="fixed top-5 right-5 z-50">
+            <Toast {...toast} onClose={() => setToast(null)} />
+          </div>
+        )}
 
-        <div className="card">
-          {view === "analysis" ? (
-            <Analysis tasks={tasks} />
-          ) : (
-            <>
-              <h1 className="text-3xl font-semibold mb-10 capitalize">
-                {view}
-              </h1>
+        <div className="flex w-full max-w-6xl gap-6">
+          <Sidebar
+            focusInput={() => inputRef.current?.focus()}
+            user={user}
+            logout={logout}
+            goToLogin={() => setPage("auth")}
+            setView={setView}
+            view={view}
+            isOpen={isSidebarOpen}
+            setIsOpen={setIsSidebarOpen}
+          />
 
-              <TaskInput
-                addTask={addTask}
-                inputRef={inputRef}
-                user={user}
-                goToLogin={() => setPage("auth")}
-              />
+          <div className="flex-1 bg-[#f7f3ed] rounded-2xl px-4 md:px-12 py-6 md:py-12 shadow-sm">
+            {view === "analysis" ? (
+              <Analysis tasks={tasks} />
+            ) : (
+              <>
+                <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 capitalize">
+                  {view}
+                </h1>
 
-              {loading ? (
-  <p className="text-gray-400 text-sm">Loading tasks...</p>
-) : (
-  <TaskList
-  tasks={view === "projects" ? groupedTasks : filteredTasks}
-  view={view}
-  toggleTask={toggleTask}
-  deleteTask={deleteTask}
-  updateTask={updateTask}   // 🔥 ADD THIS
-/>
-)}
-            </>
-          )}
+                <TaskInput
+                  addTask={addTask}
+                  inputRef={inputRef}
+                  user={user}
+                  goToLogin={() => setPage("auth")}
+                />
+
+                {loading ? (
+                  <p className="text-gray-400 text-sm">Loading tasks...</p>
+                ) : (
+                  <TaskList
+                    tasks={view === "projects" ? groupedTasks : filteredTasks}
+                    view={view}
+                    toggleTask={toggleTask}
+                    deleteTask={deleteTask}
+                    updateTask={updateTask}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
-  );
+      </>
+    )}
+  </div>
+);
 }
 
 export default App;
