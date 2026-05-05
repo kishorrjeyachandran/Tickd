@@ -17,9 +17,11 @@ function App() {
   const [page, setPage] = useState("home");
   const [view, setView] = useState("today");
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const inputRef = useRef(null);
 
-  // AUTH
+  // 🔐 AUTH
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -43,84 +45,89 @@ function App() {
     };
   }, []);
 
-  // FETCH TASKS
+  // 📥 FETCH TASKS
   useEffect(() => {
     if (!user) return;
 
     const fetchTasks = async () => {
-  setLoading(true);
+      setLoading(true);
 
-  const { data, error } = await supabase
-    .from("tasks")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-  if (error) {
-    setToast({ type: "error", message: error.message });
-    setLoading(false);
-    return;
-  }
+      if (error) {
+        setToast({ type: "error", message: error.message });
+        setLoading(false);
+        return;
+      }
 
-  setTasks(data || []);
-  setLoading(false);
-};
+      setTasks(data || []);
+      setLoading(false);
+    };
 
     fetchTasks();
   }, [user]);
 
-  // ADD TASK
+  // ➕ ADD TASK
   const addTask = async (
-  text,
-  dueDate = null,
-  project = null,
-  priority = "medium"
-) => {
-  if (!user || !text.trim()) return;
+    text,
+    dueDate = null,
+    project = null,
+    priority = "medium"
+  ) => {
+    if (!user || !text.trim()) return;
 
-  const { data, error } = await supabase
-    .from("tasks")
-    .insert([
-      {
-        text,
-        completed: false,
-        user_id: user.id,
-        due_date: dueDate,
-        project: project?.trim() || null,
-        priority,
-      },
-    ])
-    .select();
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert([
+        {
+          text,
+          completed: false,
+          user_id: user.id,
+          due_date: dueDate,
+          project: project?.trim() || null,
+          priority,
+        },
+      ])
+      .select();
 
-  if (error) {
-    setToast({ type: "error", message: error.message });
-    return;
-  }
+    if (error) {
+      setToast({ type: "error", message: error.message });
+      return;
+    }
 
-  setTasks((prev) => [data[0], ...prev]);
-};
+    setTasks((prev) => [data[0], ...prev]);
+  };
 
+  // ✏️ UPDATE TASK
   const updateTask = async (id, newText) => {
-  if (!newText.trim()) return;
+    if (!newText.trim()) return;
 
-  const { data, error } = await supabase
-    .from("tasks")
-    .update({ text: newText })
-    .eq("id", id)
-    .select();
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({ text: newText })
+      .eq("id", id)
+      .select();
 
-  if (error) {
-    setToast({ type: "error", message: error.message });
-    return;
-  }
+    if (error) {
+      setToast({ type: "error", message: error.message });
+      return;
+    }
 
-  setTasks((prev) =>
-    prev.map((t) => (t.id === id ? data[0] : t))
-  );
-};
-  // DELETE
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? data[0] : t))
+    );
+  };
+
+  // ❌ DELETE
   const deleteTask = async (id) => {
-    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", id);
 
     if (error) {
       setToast({ type: "error", message: error.message });
@@ -130,7 +137,7 @@ function App() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // TOGGLE
+  // 🔄 TOGGLE
   const toggleTask = async (task) => {
     const { data, error } = await supabase
       .from("tasks")
@@ -148,13 +155,13 @@ function App() {
     );
   };
 
-  // LOGOUT
+  // 🚪 LOGOUT
   const logout = async () => {
     await supabase.auth.signOut();
     setToast({ type: "info", message: "Logged out" });
   };
 
-  // FILTER LOGIC
+  // 📊 FILTER
   const todayDate = new Date().toISOString().split("T")[0];
 
   const filteredTasks = tasks.filter((task) => {
@@ -165,161 +172,97 @@ function App() {
     return true;
   });
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const groupedTasks = tasks.reduce((acc, task) => {
-    const projectName = task.project?.trim();
-    const key = projectName ? projectName : "No Project";
-
+    const key = task.project?.trim() || "No Project";
     if (!acc[key]) acc[key] = [];
     acc[key].push(task);
-
     return acc;
   }, {});
 
-  // ROUTING
+  // 🎯 UI
   return (
-  <div className="page">
+    <div className="page">
+      <Cursor />
 
-    {/* 🔥 GLOBAL CURSOR */}
-    <Cursor />
+      {page === "home" && (
+        <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />
+      )}
 
-    {page === "home" && (
-      <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />
-    )}
+      {page === "auth" && (
+        <Auth setUser={setUser} setToast={setToast} setPage={setPage} />
+      )}
 
-    {page === "auth" && (
-      <Auth setUser={setUser} setToast={setToast} setPage={setPage} />
-    )}
+      {page === "app" && (
+        <>
+          <SocialLinks />
 
-    {page === "app" && (
-      <>
-        <SocialLinks />
-
-        {toast && (
-          <div className="fixed top-5 right-5 z-50">
-            <Toast {...toast} onClose={() => setToast(null)} />
+          {/* 📱 MOBILE NAVBAR */}
+          <div className="md:hidden flex justify-between items-center px-4 py-3 bg-[#DDD6C0] rounded-xl mb-4">
+            <button onClick={() => setIsSidebarOpen(true)}>☰</button>
+            <h1 className="font-medium">Tickd</h1>
           </div>
-        )}
 
-        <div className="container">
-          <Sidebar
-            focusInput={() => inputRef.current?.focus()}
-            user={user}
-            logout={logout}
-            goToLogin={() => setPage("auth")}
-            setView={setView}
-            view={view}
-          />
+          {/* 🔥 OVERLAY */}
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/30 z-40 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
 
-          <div className="card">
-            {view === "analysis" ? (
-              <Analysis tasks={tasks} />
-            ) : (
-              <>
-                <h1 className="text-3xl font-semibold mb-10 capitalize">
-                  {view}
-                </h1>
+          {toast && (
+            <div className="fixed top-5 right-5 z-50">
+              <Toast {...toast} onClose={() => setToast(null)} />
+            </div>
+          )}
 
-                <TaskInput
-                  addTask={addTask}
-                  inputRef={inputRef}
-                  user={user}
-                  goToLogin={() => setPage("auth")}
-                />
+          <div className="flex w-full max-w-6xl gap-6">
+            <Sidebar
+              focusInput={() => inputRef.current?.focus()}
+              user={user}
+              logout={logout}
+              goToLogin={() => setPage("auth")}
+              setView={setView}
+              view={view}
+              isOpen={isSidebarOpen}
+              setIsOpen={setIsSidebarOpen}
+            />
 
-                <TaskList
-                  tasks={view === "projects" ? groupedTasks : filteredTasks}
-                  view={view}
-                  toggleTask={toggleTask}
-                  deleteTask={deleteTask}
-                />
-              </>
-            )}
-          </div>
-        </div>
-      </>
-    )}
+            <div className="flex-1 bg-[#f7f3ed] rounded-2xl px-4 md:px-12 py-6 md:py-12 shadow-sm">
+              {view === "analysis" ? (
+                <Analysis tasks={tasks} />
+              ) : (
+                <>
+                  <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 capitalize">
+                    {view}
+                  </h1>
 
-  </div>
-);
-
-
-return (
-  <div className="page">
-    <Cursor />
-
-    {page === "home" && (
-      <Home goToApp={() => setPage("app")} goToLogin={() => setPage("auth")} />
-    )}
-
-    {page === "auth" && (
-      <Auth setUser={setUser} setToast={setToast} setPage={setPage} />
-    )}
-
-    {page === "app" && (
-      <>
-        <SocialLinks />
-
-        {/* 🔥 MOBILE NAVBAR */}
-        <div className="md:hidden flex justify-between items-center px-4 py-3 bg-[#DDD6C0] rounded-xl mb-4">
-          <button onClick={() => setIsSidebarOpen(true)}>☰</button>
-          <h1 className="font-medium">Tickd</h1>
-        </div>
-
-        {toast && (
-          <div className="fixed top-5 right-5 z-50">
-            <Toast {...toast} onClose={() => setToast(null)} />
-          </div>
-        )}
-
-        <div className="flex w-full max-w-6xl gap-6">
-          <Sidebar
-            focusInput={() => inputRef.current?.focus()}
-            user={user}
-            logout={logout}
-            goToLogin={() => setPage("auth")}
-            setView={setView}
-            view={view}
-            isOpen={isSidebarOpen}
-            setIsOpen={setIsSidebarOpen}
-          />
-
-          <div className="flex-1 bg-[#f7f3ed] rounded-2xl px-4 md:px-12 py-6 md:py-12 shadow-sm">
-            {view === "analysis" ? (
-              <Analysis tasks={tasks} />
-            ) : (
-              <>
-                <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 capitalize">
-                  {view}
-                </h1>
-
-                <TaskInput
-                  addTask={addTask}
-                  inputRef={inputRef}
-                  user={user}
-                  goToLogin={() => setPage("auth")}
-                />
-
-                {loading ? (
-                  <p className="text-gray-400 text-sm">Loading tasks...</p>
-                ) : (
-                  <TaskList
-                    tasks={view === "projects" ? groupedTasks : filteredTasks}
-                    view={view}
-                    toggleTask={toggleTask}
-                    deleteTask={deleteTask}
-                    updateTask={updateTask}
+                  <TaskInput
+                    addTask={addTask}
+                    inputRef={inputRef}
+                    user={user}
+                    goToLogin={() => setPage("auth")}
                   />
-                )}
-              </>
-            )}
+
+                  {loading ? (
+                    <p className="text-gray-400 text-sm">Loading tasks...</p>
+                  ) : (
+                    <TaskList
+                      tasks={view === "projects" ? groupedTasks : filteredTasks}
+                      view={view}
+                      toggleTask={toggleTask}
+                      deleteTask={deleteTask}
+                      updateTask={updateTask}
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </>
-    )}
-  </div>
-);
+        </>
+      )}
+    </div>
+  );
 }
 
 export default App;
