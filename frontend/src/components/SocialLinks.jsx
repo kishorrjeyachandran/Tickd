@@ -21,7 +21,7 @@ const SocialLinks = () => {
       </a>
 
       <a
-        href="https://portfolio-rose-delta-62.vercel.app/"
+        href="https://kishorrj.vercel.app/"
         target="_blank"
         className="icon-btn"
       >
